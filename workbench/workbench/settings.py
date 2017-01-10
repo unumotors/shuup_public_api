@@ -132,7 +132,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'eval.wsgi.application'
+WSGI_APPLICATION = 'workbench.wsgi.application'
 
 
 # Database
