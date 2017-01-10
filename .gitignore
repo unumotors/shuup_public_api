@@ -1,0 +1,7 @@
+.idea
+workbench/db.sqlite3
+workbench/static
+workbench/media
+workbench/script
+__pycache__
+*.pyc
