@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import datetime
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -80,7 +82,7 @@ INSTALLED_APPS = [
     'registration',
     'rest_framework',
     'rest_framework_swagger',
-    'shuup_more_api'
+    'shuup_guest_api'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -209,7 +211,8 @@ SWAGGER_SETTINGS = {
 }
 
 JWT_AUTH = {
-    'JWT_ALLOW_REFRESH': True
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=8),
 }
 
 # extend the submit methods only if DEBUG is True

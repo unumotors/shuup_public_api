@@ -5,24 +5,16 @@
 #
 # This source code is licensed under the OSL-3.0 license found in the
 # LICENSE file in the root directory of this source tree.
-from django.core.exceptions import ImproperlyConfigured
 
 from shuup.apps import AppConfig
 
 
-class ShuupMoreApiAppConfig(AppConfig):
-    name = 'shuup_more_api'
+class ShuupGuestApiAppConfig(AppConfig):
+    name = 'shuup_guest_api'
     verbose_name = 'Shuup more API endpoints'
-    label = 'shuup_more_api'
+    label = 'shuup_guest_api'
     required_installed_apps = (
         'shuup.api',
     )
 
-    provides = {
-        'api_populator': [
-            'shuup_more_api.api:populate'
-        ]
-    }
-
-
-default_app_config = 'shuup_more_api.ShuupMoreApiAppConfig'
+default_app_config = 'shuup_guest_api.ShuupGuestApiAppConfig'
