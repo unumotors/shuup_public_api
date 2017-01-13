@@ -339,7 +339,7 @@ class APIBasket(OrderSource):
         payment_methods = self.get_available_payment_methods()
 
         advice = _(
-            "Try to remove some products from the basket "
+            "Try to remove some product from the basket "
             "and order them separately.")
 
         if self.has_shippable_lines() and not shipping_methods:

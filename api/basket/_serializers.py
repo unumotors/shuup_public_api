@@ -6,7 +6,7 @@ from shuup.core.models import Product, OrderLineType, Shop, PaymentMethod
 from shuup.core.pricing import PricingContext
 
 from ..tax import ExtendedTaxClassSerializer
-from ..products import PublicProductSerializer
+from ..product import PublicProductSerializer
 
 
 

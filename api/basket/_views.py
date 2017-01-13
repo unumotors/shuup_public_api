@@ -5,14 +5,13 @@ from django.http.response import Http404
 from django.utils.translation import ugettext as _
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from shuup.core.api.orders import OrderSerializer
 from shuup.core.models import OrderStatus
-from shuup.core.models import ShippingMethod
-from shuup.core.models import PaymentMethod
-from shuup.core.order_creator import OrderCreator
 from shuup.core.pricing import PricingContext
+from shuup.front.basket import get_basket_order_creator
 from shuup.front.basket.commands import handle_add, handle_del, handle_update, handle_add_campaign_code
 from shuup.front.basket.storage import ShopMismatchBasketCompatibilityError
 
@@ -27,6 +26,7 @@ from ...common.basket import APIBasket
 
 class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
     lookup_field = 'key'
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         return {
@@ -98,17 +98,17 @@ class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
                 'code': 'empty_basket',
                 'error': 'You can\'t order an empty basket'
             })
-        basket.finalize()
-
         basket.status = OrderStatus.objects.get_default_initial()
-        order_creator = OrderCreator()
+        order_creator = get_basket_order_creator()
         order = order_creator.create_order(basket)
+        basket.finalize()
 
         return Response(OrderSerializer(order).data)
 
 
 class APIBasketLineViewSet(GenericViewSet, ShopAPIViewSetMixin, BasketAPIViewSetMixin):
     lookup_field = 'line_id'
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         return {
