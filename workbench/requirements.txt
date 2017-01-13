@@ -17,6 +17,8 @@ django-rest-swagger==2.1.0
 django-timezone-field==1.3
 djangorestframework==3.5.3
 djangorestframework-jwt==1.9.0
+drf-extensions==0.3.1
+drf-nested-routers==0.11.1
 easy-thumbnails==2.3
 et-xmlfile==1.0.1
 factory-boy==2.7.0
@@ -35,20 +37,24 @@ openpyxl==2.3.5
 pexpect==4.2.1
 pickleshare==0.7.4
 Pillow==3.4.2
+pluggy==0.4.0
 prompt-toolkit==1.0.9
 ptyprocess==0.5.1
+py==1.4.32
 Pygments==2.1.3
 PyJWT==1.4.2
 pytoml==0.1.11
 pytz==2016.10
 requests==2.12.4
+-e git+https://github.com/shuup/shuup.git@c854cc77070a7d36ae543ea2cbba22e8ad02c486#egg=shuup
 simplegeneric==0.8.1
 simplejson==3.10.0
 six==1.10.0
+tox==2.5.0
 traitlets==4.3.1
 unicodecsv==0.14.1
 Unidecode==0.4.19
 uritemplate==3.0.0
+virtualenv==15.1.0
 wcwidth==0.1.7
 xlrd==1.0.0
--e git+https://github.com/shuup/shuup.git@v1.0.0#egg=shuup
