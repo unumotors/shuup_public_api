@@ -82,7 +82,7 @@ INSTALLED_APPS = [
     'registration',
     'rest_framework',
     'rest_framework_swagger',
-    'shuup_guest_api'
+    'shuup_public_api'
 ]
 
 MIDDLEWARE_CLASSES = [

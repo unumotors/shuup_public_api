@@ -10,11 +10,11 @@ from shuup.apps import AppConfig
 
 
 class ShuupGuestApiAppConfig(AppConfig):
-    name = 'shuup_guest_api'
+    name = 'shuup_public_api'
     verbose_name = 'Shuup more API endpoints'
-    label = 'shuup_guest_api'
+    label = 'shuup_public_api'
     required_installed_apps = (
         'shuup.api',
     )
 
-default_app_config = 'shuup_guest_api.ShuupGuestApiAppConfig'
+default_app_config = 'shuup_public_api.ShuupGuestApiAppConfig'

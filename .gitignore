@@ -4,4 +4,3 @@ workbench/static
 workbench/media
 workbench/script
 __pycache__
-*.pyc

@@ -21,6 +21,6 @@ from django.conf import settings
 urlpatterns = [
     url(r'^sa/', include('shuup.admin.urls', namespace='shuup_admin', app_name='shuup_admin')),
     url(r'^api/', include('shuup.api.urls')),
-    url(r'^api/', include('shuup_guest_api.urls')),
+    url(r'^api/', include('shuup_public_api.urls')),
     url(r'^', include('shuup.front.urls', namespace='shuup', app_name='shuup')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

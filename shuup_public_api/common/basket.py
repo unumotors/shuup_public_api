@@ -393,7 +393,7 @@ class DatabaseAPIBasketStorage(BasketStorage):
 
     def save(self, basket, data):
         """
-        :type basket: shuup_guest_api.models.APIBasket
+        :type basket: shuup_public_api.models.APIBasket
         """
         stored_basket = self._get_stored_basket(basket)
         stored_basket.data = data
@@ -410,7 +410,7 @@ class DatabaseAPIBasketStorage(BasketStorage):
         """
         Load the given basket's data dictionary from the storage.
 
-        :type basket: shuup_guest_api.api_basket.APIBasket
+        :type basket: shuup_public_api.api_basket.APIBasket
         :rtype: dict
         :raises:
           `BasketCompatibilityError` if basket loaded from the storage
