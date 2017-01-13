@@ -51,4 +51,4 @@ Unidecode==0.4.19
 uritemplate==3.0.0
 wcwidth==0.1.7
 xlrd==1.0.0
--e git+https://github.com/shuup/shuup.git@1.0.0#egg=shuup
+-e git+https://github.com/shuup/shuup.git@v1.0.0#egg=shuup
