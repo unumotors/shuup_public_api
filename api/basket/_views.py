@@ -7,21 +7,35 @@ from rest_framework.decorators import detail_route
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from shuup.core.api.orders import OrderSerializer
+from shuup.core.models import OrderStatus
+from shuup.core.models import ShippingMethod
+from shuup.core.models import PaymentMethod
+from shuup.core.order_creator import OrderCreator
 from shuup.core.pricing import PricingContext
 from shuup.front.basket.commands import handle_add, handle_del, handle_update, handle_add_campaign_code
 from shuup.front.basket.storage import ShopMismatchBasketCompatibilityError
 
-from .serializers import APIBasketSerializer, APIBasketLineSerializer, \
+from . import APIBasketSerializer, APIBasketLineSerializer, \
     CreateAPIBasketLineSerializer, ModifyAPIBasketLineSerializer, \
-    DestroyAPIBasketLineSerializer, AddCouponAPIBasketSerializer
+    DestroyAPIBasketLineSerializer, CouponAPIBasketSerializer, \
+    CreateAPIBasketSerializer, CheckoutSerializer
 
-from .mixins import ShopAPIViewSetMixin, BasketAPIViewSetMixin
-from ..common.basket import APIBasket
+from ..mixins import ShopAPIViewSetMixin, BasketAPIViewSetMixin
+from ...common.basket import APIBasket
 
 
 class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
     lookup_field = 'key'
-    serializer_class = APIBasketSerializer
+
+    def get_serializer_class(self):
+        return {
+            'retrieve': APIBasketSerializer,
+            'create': CreateAPIBasketSerializer,
+            'add_discount': CouponAPIBasketSerializer,
+            'remove_discount': CouponAPIBasketSerializer,
+            'checkout': CheckoutSerializer
+        }[self.action]
 
     def get_basket(self, *args, **kwargs):
         basket = APIBasket(self.kwargs['key'], self.get_shop())
@@ -38,19 +52,18 @@ class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
 
     def retrieve(self, request, *args, **kwargs):
         basket = self.get_basket()
-        return Response(self.serializer_class(basket, context={'request': request}).data)
+        return Response(self.get_serializer_class()(basket, context={'request': request}).data)
 
     def create(self, request, *args, **kwargs):
         shop = self.get_shop()
         basket = APIBasket(uuid.uuid4(), shop)
         basket.save()
-        return Response(self.serializer_class(basket).data)
+        return Response(APIBasketSerializer(basket, context={'request': request}).data)
 
     @detail_route(methods=['post'])
     def add_discount(self, request, *args, **kwargs):
         basket = self.get_basket()
-        import ipdb; ipdb.set_trace()
-        serializer = AddCouponAPIBasketSerializer(data=request.data)
+        serializer = self.get_serializer_class()(data=request.data)
         if serializer.is_valid(raise_exception=True):
             result = handle_add_campaign_code(request, basket, serializer.validated_data['code'])
             if not result['ok']:
@@ -60,7 +73,38 @@ class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
                 }, 'invalid_code')
             basket.save()
             new_basket = self.get_basket()
-            return Response(self.serializer_class(new_basket, context={'request': request}).data)
+            return Response(APIBasketSerializer(new_basket, context={'request': request}).data)
+
+    @detail_route(methods=['post'])
+    def remove_discount(self, request, *args, **kwargs):
+        basket = self.get_basket()
+        serializer = self.get_serializer_class()(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            basket.remove_code(serializer.validated_data['code'])
+            basket.save()
+            new_basket = self.get_basket()
+            return Response(APIBasketSerializer(new_basket, context={'request': request}).data)
+
+    @detail_route(methods=['post'])
+    def checkout(self, request, *args, **kwargs):
+        serializer = CheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        basket = self.get_basket()
+        basket.verify_orderability()
+        basket.shipping_method = serializer.validated_data['shipping_method']
+        basket.payment_method = serializer.validated_data['payment_method']
+        if basket.product_count < 1:
+            raise ValidationError({
+                'code': 'empty_basket',
+                'error': 'You can\'t order an empty basket'
+            })
+        basket.finalize()
+
+        basket.status = OrderStatus.objects.get_default_initial()
+        order_creator = OrderCreator()
+        order = order_creator.create_order(basket)
+
+        return Response(OrderSerializer(order).data)
 
 
 class APIBasketLineViewSet(GenericViewSet, ShopAPIViewSetMixin, BasketAPIViewSetMixin):

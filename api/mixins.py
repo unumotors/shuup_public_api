@@ -24,11 +24,16 @@ class ShopAPIViewSetMixin(NestedViewSetMixin):
 class BasketAPIViewSetMixin(NestedViewSetMixin):
     def initialize_request(self, request, *args, **kwargs):
         request = super(BasketAPIViewSetMixin, self).initialize_request(request, *args, **kwargs)
-        request.shop = self.get_shop()
+        request.basket = self.get_basket()
         return request
 
     def get_basket(self, *args, **kwargs):
-        basket = APIBasket(super(BasketAPIViewSetMixin, self).get_parents_query_dict()['basket__key'], self.get_shop())
+        try:
+            basket_key = super(BasketAPIViewSetMixin, self).get_parents_query_dict()['basket__key']
+        except KeyError:
+            raise Exception('Couldn\'t find basket__key in parent query dict - '
+                            'make sure this ViewSet is is a nested route of basket')
+        basket = APIBasket(basket_key, self.get_shop())
         if not basket.is_stored:
             raise Http404
         try:

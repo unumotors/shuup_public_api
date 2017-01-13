@@ -1,46 +1,18 @@
-from shuup.core.api.product_media import ProductMediaSerializer
-from shuup.core.api.products import ProductAttributeSerializer, ProductPackageLinkSerializer
-from shuup.core.models import ShippingMode
-from shuup.core.models import ProductPackageLink
+from rest_framework.relations import PrimaryKeyRelatedField
+from shuup.core.api.orders import AddressSerializer
 from rest_framework import serializers
-from enumfields.fields import EnumField
-from parler_rest.fields import TranslatedFieldsField
-from parler_rest.serializers import TranslatableModelSerializer
 from rest_framework.fields import SerializerMethodField
-from shuup.core.models import Product
-from shuup.core.models import Shop
+from shuup.core.models import Product, OrderLineType, Shop, PaymentMethod
 from shuup.core.pricing import PricingContext
 
+from ..tax import ExtendedTaxClassSerializer
+from ..products import PublicProductSerializer
 
-class APIBasketLineProductSerializer(TranslatableModelSerializer):
-    sku = serializers.CharField()
-    translations = TranslatedFieldsField(shared_model=Product)
-    primary_image = ProductMediaSerializer(read_only=True)
-    media = ProductMediaSerializer(read_only=True, many=True)
-    shipping_mode = EnumField(enum=ShippingMode)
-    attributes = ProductAttributeSerializer(many=True, read_only=True)
-    package_content = serializers.SerializerMethodField()
 
-    def get_package_content(self, product):
-        return ProductPackageLinkSerializer(ProductPackageLink.objects.filter(parent=product),
-                                            many=True,
-                                            context={'request': self.context['request']}).data
-
-    class Meta:
-        model = Product
-        fields = [
-            'sku',
-            'translations',
-            'primary_image',
-            'media',
-            'shipping_mode',
-            'attributes',
-            'package_content'
-        ]
 
 
 class APIBasketLineSerializer(serializers.Serializer):
-    product = APIBasketLineProductSerializer()
+    product = PublicProductSerializer()
     base_unit_price = serializers.DecimalField(decimal_places=2, max_digits=500)
     discount_amount = serializers.DecimalField(decimal_places=2, max_digits=500)
     net_weight = serializers.FloatField()
@@ -49,11 +21,17 @@ class APIBasketLineSerializer(serializers.Serializer):
     sku = serializers.CharField()
     text = SerializerMethodField()
     quantity = serializers.FloatField()
+    tax_class = ExtendedTaxClassSerializer()
     line_id = serializers.CharField()
 
     @staticmethod
     def get_text(obj):
         return obj.product.safe_translation_getter("name", any_language=True)
+
+
+class APIBasketDiscountSerializer(serializers.Serializer):
+    discount_amount = serializers.DecimalField(decimal_places=2, max_digits=500)
+    text = serializers.CharField()
 
 
 class CreateAPIBasketLineSerializer(serializers.Serializer):
@@ -79,6 +57,7 @@ class APIBasketSerializer(serializers.Serializer):
     currency = serializers.CharField()
     shop = serializers.PrimaryKeyRelatedField(queryset=Shop.objects.all())
     basket_name = serializers.CharField()
+    discounts = serializers.SerializerMethodField()
 
     def get_lines(self, basket):
         for line in basket.get_lines():
@@ -86,6 +65,22 @@ class APIBasketSerializer(serializers.Serializer):
             serializer = APIBasketLineSerializer(line, context={'request': self.context['request']})
             yield serializer.data
 
+    def get_discounts(self, basket):
+        for line in basket.get_final_lines():
+            if line.type == OrderLineType.DISCOUNT:
+                yield APIBasketDiscountSerializer(line).data
 
-class AddCouponAPIBasketSerializer(serializers.Serializer):
+
+class CreateAPIBasketSerializer(serializers.Serializer):
+    pass
+
+
+class CouponAPIBasketSerializer(serializers.Serializer):
     code = serializers.CharField()
+
+
+class CheckoutSerializer(serializers.Serializer):
+    payment_method = PrimaryKeyRelatedField(queryset=PaymentMethod.objects.all())
+    shipping_method = PrimaryKeyRelatedField(queryset=PaymentMethod.objects.all())
+    shipping_address = AddressSerializer()
+    billing_address = AddressSerializer()

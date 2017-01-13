@@ -1,15 +1,9 @@
 from django.utils.translation import ugettext_lazy as _
 from rest_framework.mixins import RetrieveModelMixin
-from rest_framework.serializers import ModelSerializer
 from rest_framework.viewsets import GenericViewSet
-
 from shuup.core.models import Shop
 
-
-class PublicShopSerializer(ModelSerializer):
-    class Meta:
-        fields = '__all__'
-        model = Shop
+from ._serializers import PublicShopSerializer
 
 
 class PublicShopViewSet(RetrieveModelMixin, GenericViewSet):
