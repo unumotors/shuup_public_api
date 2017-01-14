@@ -14,7 +14,7 @@ class ShuupGuestApiAppConfig(AppConfig):
     verbose_name = 'Shuup more API endpoints'
     label = 'shuup_public_api'
     required_installed_apps = (
-        'rest_framework'
+        'rest_framework',
         'shuup.api',
     )
 
