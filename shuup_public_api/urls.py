@@ -9,29 +9,29 @@ from .api.order import PublicOrderViewSet
 from .api.shop import PublicShopViewSet
 
 router = ExtendedSimpleRouter()
-shop_router = router.register('shop', PublicShopViewSet, base_name='shop')
+shop_router = router.register('shops', PublicShopViewSet, base_name='shops')
 
 # shop route
-shop_router.register(r'payment_method', PaymentMethodViewSet,
-                     base_name='payment_method',
+shop_router.register(r'payment_methods', PaymentMethodViewSet,
+                     base_name='payment_methods',
                      parents_query_lookups=['shop__identifier'])
-shop_router.register(r'shipping_method', ShippingMethodViewSet,
-                     base_name='shipping_method',
+shop_router.register(r'shipping_methods', ShippingMethodViewSet,
+                     base_name='shipping_methods',
                      parents_query_lookups=['shop__identifier'])
-shop_router.register(r'product', PublicShopProductViewSet,
-                     base_name='product',
+shop_router.register(r'products', PublicShopProductViewSet,
+                     base_name='products',
                      parents_query_lookups=['shop__identifier'])
-shop_router.register(r'order', PublicOrderViewSet,
-                     base_name='order',
+shop_router.register(r'orders', PublicOrderViewSet,
+                     base_name='orders',
                      parents_query_lookups=['shop__identifier'])
-basket_router = shop_router.register(r'basket', APIBasketViewSet,
-                                     base_name='basket',
+basket_router = shop_router.register(r'baskets', APIBasketViewSet,
+                                     base_name='baskets',
                                      parents_query_lookups=['shop__identifier'])
 
 
 # basket route
-basket_router.register(r'line', APIBasketLineViewSet,
-                       base_name='basket_line',
+basket_router.register(r'lines', APIBasketLineViewSet,
+                       base_name='basket_lines',
                        parents_query_lookups=['shop__identifier', 'basket__key'])
 
 urlpatterns = [

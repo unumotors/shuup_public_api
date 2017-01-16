@@ -39,10 +39,10 @@ class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
 
     def get_basket(self, *args, **kwargs):
         basket = APIBasket(self.kwargs['key'], self.get_shop())
-        if not basket.is_stored:
+        if not basket.is_stored or not basket.is_active:
             raise Http404
         try:
-            APIBasket(self.kwargs['key'], self.get_shop()).save()
+            basket.storage.load(basket)
         except ShopMismatchBasketCompatibilityError:
             raise ValidationError({
                 'error': _('The requested belongs to another shop'),
@@ -56,7 +56,7 @@ class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
 
     def create(self, request, *args, **kwargs):
         shop = self.get_shop()
-        basket = APIBasket(uuid.uuid4(), shop)
+        basket = APIBasket(uuid.uuid4().hex, shop)
         basket.save()
         return Response(APIBasketSerializer(basket, context={'request': request}).data)
 
@@ -102,6 +102,7 @@ class APIBasketViewSet(GenericViewSet, ShopAPIViewSetMixin):
         order_creator = get_basket_order_creator()
         order = order_creator.create_order(basket)
         basket.finalize()
+        basket.save()
 
         return Response(OrderSerializer(order).data)
 
@@ -125,8 +126,9 @@ class APIBasketLineViewSet(GenericViewSet, ShopAPIViewSetMixin, BasketAPIViewSet
         return request
 
     def create(self, request, *args, **kwargs):
+        basket = self.get_basket()
         serializer = self.get_serializer_class()(data=request.data)
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         try:
             product = serializer.validated_data['product']
             product.get_shop_instance(shop=self.request.shop)
@@ -136,15 +138,15 @@ class APIBasketLineViewSet(GenericViewSet, ShopAPIViewSetMixin, BasketAPIViewSet
                 'error': [_('The requested product does not exists or is not available in the current store')]
             })
         try:
-            handle_add(PricingContext(self.request.shop, self.request.basket.customer),
-                       self.request.basket, product.id, serializer.validated_data['quantity'])
+            handle_add(PricingContext(self.request.shop, basket.customer),
+                       basket, product.id, serializer.validated_data['quantity'])
+            basket.save()
         except ShopMismatchBasketCompatibilityError:
             raise ValidationError({
                 'code': 'shop_mismatch',
                 'error': _('The requested belongs to another shop')
             })
 
-        self.request.basket.save()
         # trigger reload, otherwise we have a cached version
         new_basket = self.get_basket()
         return Response(APIBasketSerializer(new_basket, context={'request': self.request}).data)

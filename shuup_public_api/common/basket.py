@@ -36,6 +36,10 @@ class APIBasket(OrderSource):
         self.key = key
 
     @property
+    def is_active(self):
+        return self.storage.is_active(self)
+
+    @property
     def is_stored(self):
         return self.storage.is_saved(self)
 
@@ -388,6 +392,9 @@ class APIBasket(OrderSource):
 
 class DatabaseAPIBasketStorage(BasketStorage):
 
+    def is_active(self, basket):
+        return StoredBasket.objects.filter(deleted=False, key=basket.key, finished=False).exists()
+
     def is_saved(self, basket):
         return StoredBasket.objects.filter(key=basket.key).exists()
 
@@ -452,7 +459,7 @@ class DatabaseAPIBasketStorage(BasketStorage):
 
     @staticmethod
     def _get_stored_basket(basket):
-        stored_basket = StoredBasket.objects.filter(deleted=False, key=basket.key)
+        stored_basket = StoredBasket.objects.filter(key=basket.key)
         if stored_basket:
             stored_basket = stored_basket.first()
         if not stored_basket:

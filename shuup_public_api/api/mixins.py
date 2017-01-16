@@ -24,7 +24,6 @@ class ShopAPIViewSetMixin(NestedViewSetMixin):
 class BasketAPIViewSetMixin(NestedViewSetMixin):
     def initialize_request(self, request, *args, **kwargs):
         request = super(BasketAPIViewSetMixin, self).initialize_request(request, *args, **kwargs)
-        request.basket = self.get_basket()
         return request
 
     def get_basket(self, *args, **kwargs):
@@ -34,11 +33,10 @@ class BasketAPIViewSetMixin(NestedViewSetMixin):
             raise Exception('Couldn\'t find basket__key in parent query dict - '
                             'make sure this ViewSet is is a nested route of basket')
         basket = APIBasket(basket_key, self.get_shop())
-        if not basket.is_stored:
+        if not basket.is_stored or not basket.is_active:
             raise Http404
         try:
-            APIBasket(super(BasketAPIViewSetMixin, self)
-                      .get_parents_query_dict()['basket__key'], self.get_shop()).save()
+            basket.storage.load(basket)
         except ShopMismatchBasketCompatibilityError:
             raise ValidationError({
                 'error': _('The requested belongs to another shop'),
