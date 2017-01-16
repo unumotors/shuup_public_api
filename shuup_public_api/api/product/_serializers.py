@@ -29,6 +29,7 @@ class PublicProductSerializer(TranslatableModelSerializer):
     class Meta:
         model = Product
         fields = [
+            'id',
             'sku',
             'translations',
             'primary_image',
@@ -51,5 +52,4 @@ class PublicShopProductSerializer(TranslatableModelSerializer):
             'product',
             'default_price',
             'primary_category',
-
         ]
