@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from shuup.core.models import Payment
 from shuup.core.api.orders import PaymentSerializer
+from shuup.core.models._service_payment import PaymentUrls
 from shuup.front.views.payment import get_payment_urls
 from shuup.utils.http import retry_request
 
@@ -37,9 +38,14 @@ class OrderPaymentViewSet(GenericViewSet,
         serializer = self.get_serializer_class()(data=self.request.data)
         if serializer.is_valid(raise_exception=True):
             order = self.get_order()
+            default_payment_urls = get_payment_urls(self.request, order)
             transaction_redirect = order.payment_method.get_payment_process_response(
                 order=order,
-                urls=get_payment_urls(request=self.request, order=order)
+                urls=PaymentUrls(
+                    return_url=getattr(serializer.validated_data, 'return_urls', default_payment_urls.return_url),
+                    payment_url=getattr(serializer.validated_data, 'payment_url', default_payment_urls.payment_url),
+                    cancel_url=getattr(serializer.validated_data, 'cancel_url', default_payment_urls.cancel_url)
+                )
             )
             return Response(TransactionSerializer({
                 'payment_url': transaction_redirect.url
