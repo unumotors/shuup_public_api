@@ -46,7 +46,7 @@ PyJWT==1.4.2
 pytoml==0.1.11
 pytz==2016.10
 requests==2.12.4
-https://github.com/shuup/shuup/releases/download/v1.0.0/shuup-1.0.0-py2.py3-none-any.whl 
+https://github.com/shuup/shuup/releases/download/v1.1.0/shuup-1.1.0-py2.py3-none-any.whl 
 simplegeneric==0.8.1
 simplejson==3.10.0
 six==1.10.0
