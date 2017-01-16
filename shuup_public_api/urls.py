@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 
+from .api.payment import OrderPaymentViewSet
 from .api.shipping_method import ShippingMethodViewSet
 from .api.payment_method import PaymentMethodViewSet
 from .api.basket import APIBasketLineViewSet, APIBasketViewSet
@@ -21,13 +22,17 @@ shop_router.register(r'shipping_methods', ShippingMethodViewSet,
 shop_router.register(r'products', PublicShopProductViewSet,
                      base_name='products',
                      parents_query_lookups=['shop__identifier'])
-shop_router.register(r'orders', PublicOrderViewSet,
-                     base_name='orders',
-                     parents_query_lookups=['shop__identifier'])
+order_router = shop_router.register(r'orders', PublicOrderViewSet,
+                                    base_name='orders',
+                                    parents_query_lookups=['shop__identifier'])
 basket_router = shop_router.register(r'baskets', APIBasketViewSet,
                                      base_name='baskets',
                                      parents_query_lookups=['shop__identifier'])
 
+# order route
+order_router.register(r'payments', OrderPaymentViewSet,
+                      base_name='payments',
+                      parents_query_lookups=['shop__identifier', 'order__key'])
 
 # basket route
 basket_router.register(r'lines', APIBasketLineViewSet,

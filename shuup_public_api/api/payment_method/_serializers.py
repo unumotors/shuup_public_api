@@ -9,7 +9,7 @@ class PaymentMethodSerializer(TranslatableModelSerializer):
     class Meta:
         fields = (
             'id',
-            'identifier',
+            'choice_identifier',
             'logo',
             'translations'
         )

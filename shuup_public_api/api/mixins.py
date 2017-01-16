@@ -1,7 +1,8 @@
 from django.http.response import Http404
+from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 from rest_framework_extensions.mixins import NestedViewSetMixin
-from shuup.core.models import Shop
+from shuup.core.models import Shop, Order
 from shuup.front.basket.storage import ShopMismatchBasketCompatibilityError
 from django.utils.translation import ugettext as _
 
@@ -15,10 +16,25 @@ class ShopAPIViewSetMixin(NestedViewSetMixin):
         return request
 
     def get_shop(self):
-        shop = Shop.objects.get(
+        shop = get_object_or_404(
+            Shop,
             identifier=super(ShopAPIViewSetMixin, self).get_parents_query_dict()['shop__identifier']
         )
         return shop
+
+
+class OrderAPIViewSetMixin(NestedViewSetMixin):
+    def initialize_request(self, request, *args, **kwargs):
+        request = super(OrderAPIViewSetMixin, self).initialize_request(request, *args, **kwargs)
+        request.order = self.get_order()
+        return request
+
+    def get_order(self):
+        order = get_object_or_404(
+            Order,
+            key=super(OrderAPIViewSetMixin, self).get_parents_query_dict()['order__key']
+        )
+        return order
 
 
 class BasketAPIViewSetMixin(NestedViewSetMixin):
