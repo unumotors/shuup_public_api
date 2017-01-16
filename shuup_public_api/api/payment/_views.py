@@ -42,9 +42,9 @@ class OrderPaymentViewSet(GenericViewSet,
             transaction_redirect = order.payment_method.get_payment_process_response(
                 order=order,
                 urls=PaymentUrls(
-                    return_url=getattr(serializer.validated_data, 'return_url', default_payment_urls.return_url),
-                    payment_url=getattr(serializer.validated_data, 'payment_url', default_payment_urls.payment_url),
-                    cancel_url=getattr(serializer.validated_data, 'cancel_url', default_payment_urls.cancel_url)
+                    return_url=serializer.validated_data.get('return_url', default_payment_urls.return_url),
+                    payment_url=serializer.validated_data.get('payment_url', default_payment_urls.payment_url),
+                    cancel_url=serializer.validated_data.get('cancel_url', default_payment_urls.cancel_url)
                 )
             )
             return Response(TransactionSerializer({
