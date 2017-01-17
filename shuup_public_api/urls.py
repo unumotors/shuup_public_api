@@ -13,7 +13,7 @@ router = ExtendedSimpleRouter()
 shop_router = router.register('shops', PublicShopViewSet, base_name='shops')
 
 # shop route
-shop_router.register(r'payment_methods', PaymentMethodViewSet,
+payment_router = shop_router.register(r'payment_methods', PaymentMethodViewSet,
                      base_name='payment_methods',
                      parents_query_lookups=['shop__identifier'])
 shop_router.register(r'shipping_methods', ShippingMethodViewSet,
@@ -40,5 +40,5 @@ basket_router.register(r'lines', APIBasketLineViewSet,
                        parents_query_lookups=['shop__identifier', 'basket__key'])
 
 urlpatterns = [
-    url(r'^public/', include(router.urls))
+    url(r'^public/', include(router.urls, namespace='public_api'))
 ]
