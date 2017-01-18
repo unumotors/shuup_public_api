@@ -16,3 +16,6 @@ class PublicShopViewSet(RetrieveModelMixin, GenericViewSet):
 
     def get_view_name(self):
         return _('Shops')
+
+    def retrieve(self, request, *args, **kwargs):
+        raise Exception('Boom bam')

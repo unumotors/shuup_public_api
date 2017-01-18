@@ -1,4 +1,3 @@
-from django.conf import settings
 from rest_framework.reverse import reverse
 from rest_framework.decorators import list_route
 
@@ -11,7 +10,7 @@ from shuup.core.models import Payment
 from shuup.core.api.orders import PaymentSerializer
 from shuup.core.models import PaymentUrls
 
-
+from ...utils import convert_to_secure_url
 from ._serializers import CreateOrderPaymentSerializer, TransactionSerializer
 from ..mixins import ShopAPIViewSetMixin, OrderAPIViewSetMixin
 
@@ -51,11 +50,15 @@ class OrderPaymentViewSet(GenericViewSet,
                 urls=PaymentUrls(
                     return_url=serializer.validated_data.get(
                         'return_url',
-                        request.build_absolute_uri(self._reverse_url('public_api:payments-callback-list'))),
-                    cancel_url=serializer.validated_data.get(
+                        convert_to_secure_url(
+                            request.build_absolute_uri(self._reverse_url('public_api:payments-callback-list'))),
+                        ),
+                        cancel_url=serializer.validated_data.get(
                         'cancel_url',
-                        request.build_absolute_uri(self._reverse_url('public_api:payments-cancel-list'))),
-                    payment_url=None
+                        convert_to_secure_url(
+                            request.build_absolute_uri(self._reverse_url('public_api:payments-cancel-list'))),
+                        ),
+                        payment_url=None
                 )
             )
             return Response(TransactionSerializer({
